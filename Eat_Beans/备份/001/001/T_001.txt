@@ -1,0 +1,73 @@
+
+#include <Wire.h>
+
+#define Address_Bottom 2
+char cmd[]={'F','B','L','R','S'};
+int x=100;
+void setup()
+{
+  Wire.begin();        // join i2c bus (address optional for master)
+  Serial.begin(9600);  // start serial for output
+}
+
+void loop()
+{
+  int Distance[6],Dist_Max=0,Num_Max;
+  for(int i=0;i<6;i++)
+  {
+    Distance[i]=analogRead(i);
+  }
+  for(int i=0;i<6;i++)
+  {
+      if(Distance[i]>Dist_Max)
+        {
+          Dist_Max=Distance[i];
+          Num_Max=i;
+        }  
+   Serial.print(Distance[i]);
+   Serial.print(" ");
+  }
+  Serial.print("        ");
+  Serial.print(Dist_Max);
+  Serial.print("   ");
+  Serial.println(Num_Max);
+  if(Dist_Max>100)
+  {
+       if(Num_Max<2) {Send_Command(cmd[2],100);Serial.println(cmd[2]);}
+  else if(Num_Max==4 || Num_Max==5) {Send_Command(cmd[3],100);Serial.println(cmd[3]); }
+  else if(Num_Max==2 || Num_Max==3) 
+        {
+          if(Dist_Max>800)
+          {Send_Command(cmd[4],100);Serial.println(cmd[4]);delay(200);}
+          else
+          {Send_Command(cmd[0],100);Serial.println(cmd[0]); }
+         }
+  }
+  else 
+  {
+    Send_Command(cmd[2],80);Serial.println(cmd[2]); 
+  }
+  
+  
+   delay(100);
+
+}
+
+ void Send_Command(char command,int num)
+ {
+  Wire.beginTransmission(Address_Bottom); // transmit to device #2
+  Wire.write(command);        
+  Wire.write(num);        
+  Wire.endTransmission();    // stop transmitting
+  Serial.println(num);
+ }
+ 
+void Get_Value()
+{
+   Wire.requestFrom(Address_Bottom, 6);    // request 6 bytes from slave device #2
+   while(Wire.available())    // slave may send less than requested
+  { 
+    char c = Wire.read(); // receive a byte as character
+    Serial.print(c);         // print the character
+  }
+}

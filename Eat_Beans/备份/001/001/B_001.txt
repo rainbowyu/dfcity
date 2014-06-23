@@ -1,0 +1,85 @@
+
+#include <Wire.h>
+
+#define EN1 5//pin for run the left motor 
+#define IN1 12//pin for control left motor direction
+#define EN2 6//pin for run the right motor 
+#define IN2 7//pin for control right motor direction
+
+int Cmd_Num=0;
+char Cmd_Str;
+void setup()
+{
+  pinMode(5,OUTPUT);//init the motor driver pins
+  pinMode(6,OUTPUT);
+  pinMode(7,OUTPUT);
+  pinMode(12,OUTPUT);
+  Wire.begin(2);                // join i2c bus with address #2
+  Wire.onRequest(requestEvent); // register event
+  Wire.onReceive(receiveEvent); // register event
+  Serial.begin(9600);
+}
+
+void loop()
+{  
+  Motor();
+}
+
+void Motor()
+{
+    switch (Cmd_Str)
+  {
+    case 'F': Forward(Cmd_Num,Cmd_Num);       break;
+    case 'B': Back(Cmd_Num,Cmd_Num);          break;
+    case 'L': Turn_Left(Cmd_Num,Cmd_Num);     break;
+    case 'R': Turn_Right(Cmd_Num,Cmd_Num);    break;
+    case 'S': Stop();                         break;
+    default: break;
+  }
+}
+
+void receiveEvent(int howMany)
+{
+  while(Wire.available()>1) // loop through all but the last
+  {
+    Cmd_Str = Wire.read(); // receive byte as a character
+    Serial.print(Cmd_Str);     // print the character
+  }
+  Serial.print("  "); 
+   Cmd_Num = Wire.read();    // receive byte as an integer
+  Serial.println(Cmd_Num);         // print the integer
+}
+
+void requestEvent()
+{
+  Wire.write("hello");
+}
+
+void Forward(int speed_x,int speed_y)
+{
+    digitalWrite(IN1,LOW);analogWrite(EN1,speed_x);
+    digitalWrite(IN2,LOW);analogWrite(EN2,speed_y);
+}
+
+void Back(int speed_x,int speed_y)
+{
+    digitalWrite(IN1,HIGH);analogWrite(EN1,speed_x);
+    digitalWrite(IN2,HIGH);analogWrite(EN2,speed_y);
+}
+
+void Turn_Left(int speed_x,int speed_y)
+{
+    digitalWrite(IN1,HIGH);analogWrite(EN1,speed_x);
+    digitalWrite(IN2,LOW);analogWrite(EN2,speed_y);
+}
+
+void Turn_Right(int speed_x,int speed_y)
+{
+    digitalWrite(IN1,LOW);analogWrite(EN1,speed_x);
+    digitalWrite(IN2,HIGH);analogWrite(EN2,speed_y);
+}
+void Stop()
+{
+    digitalWrite(IN1,HIGH);analogWrite(EN1,0);
+    digitalWrite(IN2,HIGH);analogWrite(EN2,0);
+}
