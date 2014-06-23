@@ -11,7 +11,22 @@ void setup()
 }
 
 void loop()
-{
+{	
+	if (Serial.available())
+   {
+     if (SernumBefore!=Sernum)
+     {
+       switch (Sernum)
+       {
+         case '4':if (SernumBefore==3){Send_Command('S',0);delay(3000);Send_Command('F',150);}break;
+         case '5':Send_Command('S',0);delay(8000);Send_Command('F',150);break;
+         case '7':if (SernumBefore==6){Send_Command('S',0);delay(3000);Send_Command('F',150);}break;
+         default:break;
+       }
+     }
+     SernumBefore=Sernum;
+   }
+   
 	Num_Max=0;
 	Dist_Max=0;
 	for(int i=0;i<3;i++)
@@ -45,8 +60,6 @@ void loop()
 			case 2:Send_Command('R',150);break;
 		}
 	 }
-//	delay(100);//ÑÓÊ±100ms
-//	Get_Value(Num_Max);
 }
 
 void Send_Command(char command,int num)
